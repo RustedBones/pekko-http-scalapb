@@ -1,67 +1,107 @@
 // General info
-val username = "RustedBones"
-val repo     = "akka-http-scalapb"
+val username  = "RustedBones"
+val repo      = "pekko-http-scalapb"
+val githubUrl = s"https://github.com/$username/$repo"
 
-// for sbt-github-actions
-ThisBuild / crossScalaVersions := Seq("2.13.8", "2.12.16")
-ThisBuild / scalaVersion := crossScalaVersions.value.head
-ThisBuild / githubWorkflowBuild := Seq(
-  WorkflowStep.Sbt(name = Some("Check project"), commands = List("scalafmtCheckAll", "headerCheckAll")),
-  WorkflowStep.Sbt(name = Some("Build project"), commands = List("test"))
-)
-ThisBuild / githubWorkflowTargetBranches := Seq("main")
-ThisBuild / githubWorkflowPublishTargetBranches := Seq.empty
-
-lazy val commonSettings = Seq(
-  organization := "fr.davit",
-  organizationName := "Michel Davit",
-  homepage := Some(url(s"https://github.com/$username/$repo")),
-  licenses += ("Apache-2.0", new URL("https://www.apache.org/licenses/LICENSE-2.0.txt")),
-  startYear := Some(2019),
-  scmInfo := Some(ScmInfo(url(s"https://github.com/$username/$repo"), s"git@github.com:$username/$repo.git")),
-  developers := List(
-    Developer(
-      id = s"$username",
-      name = "Michel Davit",
-      email = "michel@davit.fr",
-      url = url(s"https://github.com/$username")
-    )
-  ),
-  publishMavenStyle := true,
-  Test / publishArtifact := false,
-  publishTo := Some(if (isSnapshot.value) Opts.resolver.sonatypeSnapshots else Opts.resolver.sonatypeStaging),
-  releaseCrossBuild := true,
-  releasePublishArtifactsAction := PgpKeys.publishSigned.value,
-  credentials ++= (for {
-    username <- sys.env.get("SONATYPE_USERNAME")
-    password <- sys.env.get("SONATYPE_PASSWORD")
-  } yield Credentials("Sonatype Nexus Repository Manager", "oss.sonatype.org", username, password)).toSeq,
-  libraryDependencies ++= Seq(
-    Dependencies.AkkaHttp,
-    Dependencies.ScalaCollectionCompat,
-    Dependencies.ScalaPB,
-    Dependencies.Provided.AkkaStream,
-    Dependencies.Test.AkkaHttpTestkit,
-    Dependencies.Test.AkkaTestkit,
-    Dependencies.Test.ScalaTest
+ThisBuild / tlBaseVersion := "1.0"
+ThisBuild / organization := "fr.davit"
+ThisBuild / organizationName := "Michel Davit"
+ThisBuild / startYear := Some(2019)
+ThisBuild / licenses := Seq(License.Apache2)
+ThisBuild / homepage := Some(url(githubUrl))
+ThisBuild / scmInfo := Some(ScmInfo(url(githubUrl), s"git@github.com:$username/$repo.git"))
+ThisBuild / developers := List(
+  Developer(
+    id = s"$username",
+    name = "Michel Davit",
+    email = "michel@davit.fr",
+    url = url(s"https://github.com/$username")
   )
 )
 
-lazy val `akka-http-scalapb` = (project in file("."))
-  .dependsOn(`akka-http-scalapb-binary`, `akka-http-scalapb-json4s`)
-  .aggregate(`akka-http-scalapb-binary`, `akka-http-scalapb-json4s`)
-  .settings(commonSettings: _*)
-  .settings(ScalaPBSettings.default: _*)
+// scala versions
+val scala3       = "3.3.1"
+val scala213     = "2.13.12"
+val defaultScala = scala3
 
-lazy val `akka-http-scalapb-binary` = (project in file("binary"))
-  .settings(commonSettings: _*)
-  .settings(ScalaPBSettings.default: _*)
+// github actions
+val java17      = JavaSpec.temurin("17")
+val java11      = JavaSpec.temurin("11")
+val defaultJava = java17
 
-lazy val `akka-http-scalapb-json4s` = (project in file("json4s"))
-  .settings(commonSettings: _*)
-  .settings(ScalaPBSettings.default: _*)
+ThisBuild / scalaVersion := defaultScala
+ThisBuild / crossScalaVersions := Seq(scala3, scala213)
+ThisBuild / githubWorkflowTargetBranches := Seq("main")
+ThisBuild / githubWorkflowJavaVersions := Seq(java17, java11)
+
+// build
+ThisBuild / tlFatalWarnings := true
+ThisBuild / tlJdkRelease := Some(8)
+ThisBuild / tlSonatypeUseLegacyHost := true
+
+// mima
+ThisBuild / mimaBinaryIssueFilters ++= Seq()
+
+// scalaPB
+val protoSourceManaged = settingKey[File]("Default directory for generated protobuf by the build.")
+ThisBuild / protoSourceManaged := sourceManaged.value / "compiled_proto"
+ThisBuild / PB.protocVersion := Dependencies.Versions.Protobuf
+
+lazy val protobufConfigSettings = Def.settings(
+  PB.targets := Seq(
+    scalapb.gen(grpc = false) -> Defaults.configSrcSub(protoSourceManaged).value
+  ),
+  managedSourceDirectories ++= PB.targets.value.map(_.outputPath)
+)
+
+lazy val protobufSettings = Seq(Compile, Test).flatMap(c => inConfig(c)(protobufConfigSettings)) ++
+  inConfig(Test)(
+    Def.settings(
+      // generated protobuf discards non-unit value
+      scalacOptions ~= { _.filterNot(_ == "-Wvalue-discard") }
+    )
+  )
+
+lazy val `pekko-http-scalapb` = (project in file("."))
+  .dependsOn(`pekko-http-scalapb-binary`, `pekko-http-scalapb-json4s`)
+  .aggregate(`pekko-http-scalapb-binary`, `pekko-http-scalapb-json4s`)
+  .settings(protobufSettings)
   .settings(
     libraryDependencies ++= Seq(
-      Dependencies.ScalaPbJson4s
+      Dependencies.PekkoHttp,
+      Dependencies.ScalaPB,
+      Dependencies.Provided.PekkoStream,
+      Dependencies.Test.PekkoHttpTestkit,
+      Dependencies.Test.PekkoTestkit,
+      Dependencies.Test.ScalaTest
+    )
+  )
+
+lazy val `pekko-http-scalapb-binary` = (project in file("binary"))
+  .settings(protobufSettings)
+  .settings(
+    libraryDependencies ++= Seq(
+      Dependencies.PekkoHttp,
+      Dependencies.ScalaCollectionCompat,
+      Dependencies.ScalaPB,
+      Dependencies.Provided.PekkoStream,
+      Dependencies.Test.PekkoHttpTestkit,
+      Dependencies.Test.PekkoTestkit,
+      Dependencies.Test.ScalaTest
+    )
+  )
+
+lazy val `pekko-http-scalapb-json4s` = (project in file("json4s"))
+  .settings(protobufSettings)
+  .settings(
+    libraryDependencies ++= Seq(
+      Dependencies.PekkoHttp,
+      Dependencies.ScalaCollectionCompat,
+      Dependencies.ScalaPB,
+      Dependencies.ScalaPbJson4s,
+      Dependencies.Provided.PekkoStream,
+      Dependencies.Test.PekkoHttpTestkit,
+      Dependencies.Test.PekkoTestkit,
+      Dependencies.Test.ScalaTest
     )
   )

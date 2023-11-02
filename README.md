@@ -1,38 +1,31 @@
-# akka-http-scalapb
+# pekko-http-scalapb
 
-[![Continuous Integration](https://github.com/RustedBones/akka-http-scalapb/actions/workflows/ci.yml/badge.svg)](https://github.com/RustedBones/akka-http-scalapb/actions/workflows/ci.yml)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/fr.davit/akka-http-scalapb_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/fr.davit/akka-http-scalapb_2.12)
+[![Continuous Integration](https://github.com/RustedBones/pekko-http-scalapb/actions/workflows/ci.yml/badge.svg)](https://github.com/RustedBones/pekko-http-scalapb/actions/workflows/ci.yml)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/fr.davit/pekko-http-scalapb_3/badge.svg)](https://maven-badges.herokuapp.com/maven-central/fr.davit/pekko-http-scalapb_3)
 [![Software License](https://img.shields.io/badge/license-Apache%202-brightgreen.svg?style=flat)](LICENSE)
 [![Scala Steward badge](https://img.shields.io/badge/Scala_Steward-helping-blue.svg?style=flat&logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAQCAMAAAARSr4IAAAAVFBMVEUAAACHjojlOy5NWlrKzcYRKjGFjIbp293YycuLa3pYY2LSqql4f3pCUFTgSjNodYRmcXUsPD/NTTbjRS+2jomhgnzNc223cGvZS0HaSD0XLjbaSjElhIr+AAAAAXRSTlMAQObYZgAAAHlJREFUCNdNyosOwyAIhWHAQS1Vt7a77/3fcxxdmv0xwmckutAR1nkm4ggbyEcg/wWmlGLDAA3oL50xi6fk5ffZ3E2E3QfZDCcCN2YtbEWZt+Drc6u6rlqv7Uk0LdKqqr5rk2UCRXOk0vmQKGfc94nOJyQjouF9H/wCc9gECEYfONoAAAAASUVORK5CYII=)](https://scala-steward.org)
 
-akka-http protobuf and json marshalling/unmarshalling for ScalaPB messages
-
+pekko-http protobuf and json marshalling/unmarshalling for ScalaPB messages
 
 ## Versions
 
-| Version | Release date | Akka Http version | ScalaPB version            | Scala versions                |
-|---------|--------------|-------------------|----------------------------|-------------------------------|
-| `0.2.5` | 2022-02-06   | `10.2.7`          | `0.11.5` (`0.12.0` json4s) | `2.13.8`, `2.12.15`           |
-| `0.2.4` | 2021-03-24   | `10.2.4`          | `0.11.0` (`0.11.0` json4s) | `2.13.5`, `2.12.13`           |
-| `0.2.3` | 2020-09-18   | `10.2.0`          | `0.10.8` (`0.10.1` json4s) | `2.13.3`, `2.12.12`           |
-| `0.2.2` | 2020-05-10   | `10.1.11`         | `0.10.3` (`0.10.1` json4s) | `2.13.2`, `2.12.11`           |
-| `0.2.1` | 2019-07-13   | `10.1.8`          | `0.9.0`  (`0.9.2` json4s)  | `2.13.0`, `2.12.8`, `2.11.12` |
-| `0.2.0` | 2019-06-22   | `10.1.8`          | `0.9.0`  (`0.9.2` json4s)  | `2.13.0`, `2.12.8`, `2.11.12` |
-| `0.1.0` | 2019-01-27   | `10.1.7`          | `0.8.4`  (`0.7.2` json4s)  | `2.12.8`, `2.11.12`           |
+| Version | Release date | Pekko Http version | ScalaPB version | Scala versions |
+|---------|--------------|--------------------|-----------------|----------------|
+| `x.x.x` | xxxx-xx-xx   | `x.x.x`            | `x.x.x`         | `x.x.x`        |
 
 The complete list can be found in the [CHANGELOG](CHANGELOG.md) file.
 
-## Getting akka-http-scalapb
+## Getting pekko-http-scalapb
 
 Libraries are published to Maven Central. Add to your `build.sbt`:
 
-```scala
-libraryDependencies += "fr.davit" %% "akka-http-scalapb" % <version> // binary & json support
+```sbt
+libraryDependencies += "fr.davit" %% "pekko-http-scalapb" % <version> // binary & json support
 ```
 
 ## Quick start
 
-For the examples, we are using the following proto domain model 
+For the examples, we are using the following proto domain model
 
 ```proto
 message Item {
@@ -49,8 +42,8 @@ The implicit marshallers and unmarshallers for your generated proto classes are 
 simply need to have them in scope.
 
 ```scala
-import akka.http.scaladsl.server.Directives._
-import fr.davit.akka.http.scaladsl.marshallers.scalapb.ScalaPBSupport._
+import org.apache.pekko.http.scaladsl.server.Directives._
+import fr.davit.pekko.http.scaladsl.marshallers.scalapb.ScalaPBSupport._
 
 object MyProtoService {
 
@@ -70,6 +63,7 @@ object MyProtoService {
 ```
 
 Marshalling/Unmarshalling of the generated classes depends on the `Accept`/`Content-Type` header sent by the client:
+
 - `Content-Type: application/json`: json
 - `Content-Type: application/x-protobuf`: binary
 - `Content-Type: application/x-protobuffer`: binary
@@ -78,21 +72,20 @@ Marshalling/Unmarshalling of the generated classes depends on the `Accept`/`Cont
 
 No `Accept` header or matching several (eg `Accept: application/*`) will take the 1st matching type from the above list.
 
-
 ### Json only
 
 If you are using scalaPB for json (un)marshalling only, you can use `ScalaPBJsonSupport` from the sub module
 
-```scala
-libraryDependencies += "fr.davit" %% "akka-http-scalapb-json4s" % <version> // json support only
+```sbt
+libraryDependencies += "fr.davit" %% "pekko-http-scalapb-json4s" % <version> // json support only
 ```
 
-### Binary only 
+### Binary only
 
 If you are using scalaPB for binary (un)marshalling only, you can use `ScalaPBBinarySupport` form the sub module
 
-```scala
-libraryDependencies += "fr.davit" %% "akka-http-scalapb-binary" % <version> // binary support only
+```sbt
+libraryDependencies += "fr.davit" %% "peko-http-scalapb-binary" % <version> // binary support only
 ```
 
 ## Limitation
