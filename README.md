@@ -9,9 +9,9 @@ pekko-http protobuf and json marshalling/unmarshalling for ScalaPB messages
 
 ## Versions
 
-| Version | Release date | Pekko Http version | ScalaPB version | Scala versions |
-|---------|--------------|--------------------|-----------------|----------------|
-| `x.x.x` | xxxx-xx-xx   | `x.x.x`            | `x.x.x`         | `x.x.x`        |
+| Version | Release date | Pekko Http version | ScalaPB version | Scala versions     |
+|---------|--------------|--------------------|-----------------|--------------------|
+| `1.0.0` | 2023-11-02   | `1.0.0`            | `0.11.4`        | `3.3.1`, `2.13.12` |
 
 The complete list can be found in the [CHANGELOG](CHANGELOG.md) file.
 
