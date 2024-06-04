@@ -7,7 +7,7 @@ object Dependencies {
     val PekkoHttp             = "1.0.1"
     val Protobuf              = "3.24.4"
     val ScalaCollectionCompat = "2.12.0"
-    val ScalaPB               = "0.11.15"
+    val ScalaPB               = "0.11.17"
     val ScalaPBJson4s         = "0.12.1"
     val ScalaTest             = "3.2.18"
   }
