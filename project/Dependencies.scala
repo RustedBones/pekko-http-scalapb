@@ -3,7 +3,7 @@ import sbt._
 object Dependencies {
 
   object Versions {
-    val Pekko                 = "1.0.2"
+    val Pekko                 = "1.0.3"
     val PekkoHttp             = "1.0.1"
     val Protobuf              = "3.24.4"
     val ScalaCollectionCompat = "2.12.0"
