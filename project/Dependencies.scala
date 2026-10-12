@@ -8,7 +8,7 @@ object Dependencies {
     val Protobuf              = "3.24.4"
     val ScalaCollectionCompat = "2.12.0"
     val ScalaPB               = "0.11.15"
-    val ScalaPBJson4s         = "0.12.1"
+    val ScalaPBJson4s         = "0.12.3"
     val ScalaTest             = "3.2.18"
   }
 
